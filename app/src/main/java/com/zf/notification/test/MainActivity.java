@@ -1,7 +1,9 @@
-package com.zf.notification;
+package com.zf.notification.test;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
+import com.zf.notification.XNotificationManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -10,8 +12,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        XNotificationManager manager = new XNotificationManager(this);
-        manager.setLogger(true);
-        manager.sendNotification("自定义通知栏","我是通知栏");
+        XNotificationManager.getInstance(this).sendNotification("自定义通知栏","我是通知栏");
     }
 }

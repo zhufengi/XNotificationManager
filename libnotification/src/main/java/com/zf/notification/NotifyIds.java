@@ -12,4 +12,10 @@ public class NotifyIds {
         this.notifyId = notifyId;
     }
 
+    @Override
+    public String toString() {
+        return "NotifyIds{" +
+                "notifyId=" + notifyId +
+                '}';
+    }
 }

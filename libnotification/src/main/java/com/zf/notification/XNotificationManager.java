@@ -2,12 +2,10 @@ package com.zf.notification;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
@@ -50,30 +48,22 @@ public class XNotificationManager extends ContextWrapper {
      * 通知栏高版本区分
      */
     private final int currentHighVersionDefaultApi = Build.VERSION_CODES.O;
-    /**
-     * 默认channel id
-     */
-    private String channelID = "channel_1";
-    /**
-     * 默认名字
-     */
-    private String channelName = "channel_hemihua_1";
-    /**
-     * 更新默认id
-     */
-    public int notifyID = 1;
-    /**更新自定义id*/
-    public int notifyCustomID = 2;
+    /**默认的notifyId*/
+    private int defaultNotifyId = 0;
+    /**NotifyId 设置*/
+    private static NotifyIds notifyIds;
     /**channel 设置*/
-    private ChannelStatus channelStatus;
+    private static NotificationChannel channelStatus = null;
 
     /**
      *
      * @param context
      */
-    public XNotificationManager(Context context) {
+    private XNotificationManager(Context context) {
         super(context);
-        channelStatus = new ChannelStatus();
+        if (channelStatus == null){
+            throw new UnsupportedOperationException("u need initChannel");
+        }
         notificationStyles = new NotificationStyles(this);
     }
 
@@ -86,6 +76,25 @@ public class XNotificationManager extends ContextWrapper {
             }
         }
         return instance;
+    }
+
+    /**
+     * init Channel
+     * 建议在Application中处理
+     * @param channelId
+     * @param channelName
+     */
+    public static void initChannel(String channelId,String channelName){
+        channelStatus = NotificationChannel.createNotificationChannel(channelId,channelName);
+    }
+
+    /**
+     * 设置当前通知的notifyid
+     * @param notifyId
+     */
+    public void setCurrentNotifyId(int notifyId){
+        new NotifyIds(notifyId);
+        this.defaultNotifyId = notifyId;
     }
 
     /**
@@ -129,8 +138,8 @@ public class XNotificationManager extends ContextWrapper {
      * 创建通知渠道 Android O(8.0)
      */
     @TargetApi(Build.VERSION_CODES.O)
-    public void createNotificationChannel() {
-        NotificationChannel channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+    public void createNotificationChannelBuild() {
+        android.app.NotificationChannel channel = new android.app.NotificationChannel(channelStatus.getChannelId(), channelStatus.getChannelName(), NotificationManager.IMPORTANCE_HIGH);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         getManager().createNotificationChannel(channel);
     }
@@ -144,7 +153,7 @@ public class XNotificationManager extends ContextWrapper {
      */
     @TargetApi(Build.VERSION_CODES.O)
     private Notification.Builder setChannelNotification(String title, String content) {
-        return new Notification.Builder(getApplicationContext(), channelID)
+        return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
                 .setContentTitle(title)
                 .setContentText(content)
                 .setSmallIcon(android.R.drawable.stat_notify_more)
@@ -153,8 +162,8 @@ public class XNotificationManager extends ContextWrapper {
 
     @TargetApi(Build.VERSION_CODES.O)
     public Notification.Builder setChannelNotificationNoIcon(String title, String content) {
-        createNotificationChannel();
-        return new Notification.Builder(getApplicationContext(), channelID)
+        createNotificationChannelBuild();
+        return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
                 .setContentTitle(title)
                 .setContentText(content)
                 .setAutoCancel(true);
@@ -168,7 +177,7 @@ public class XNotificationManager extends ContextWrapper {
      * @return
      */
     private NotificationCompat.Builder setNotification(String title, String content) {
-        return new NotificationCompat.Builder(getApplicationContext(), channelID)
+        return new NotificationCompat.Builder(getApplicationContext(), channelStatus.getChannelId())
                 .setContentTitle(title)
                 .setContentText(content)
                 .setSmallIcon(android.R.drawable.stat_notify_more)
@@ -185,12 +194,12 @@ public class XNotificationManager extends ContextWrapper {
         Logger.i(TAG,"11111111");
         cancelAll();
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
-            createNotificationChannel();
+            createNotificationChannelBuild();
             Notification notification = setChannelNotification(title, content).build();
-            getManager().notify(notifyID, notification);
+            getManager().notify(defaultNotifyId, notification);
         } else {
             Notification notification = setNotification(title, content).build();
-            getManager().notify(notifyID, notification);
+            getManager().notify(defaultNotifyId, notification);
         }
     }
 
@@ -204,12 +213,12 @@ public class XNotificationManager extends ContextWrapper {
     public void sendNotification(String title, String content, int icon) {
         cancelAll();
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
-            createNotificationChannel();
+            createNotificationChannelBuild();
             Notification notification = setCustomNotificationHighVersion(title, content, null, android.R.drawable.sym_def_app_icon, icon).build();
-            getManager().notify(notifyID, notification);
+            getManager().notify(defaultNotifyId, notification);
         } else {
             Notification notification = setCustomNotification(title, content, null, android.R.drawable.sym_def_app_icon, icon).build();
-            getManager().notify(notifyID, notification);
+            getManager().notify(defaultNotifyId, notification);
         }
     }
 
@@ -225,7 +234,7 @@ public class XNotificationManager extends ContextWrapper {
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
     private Notification.Builder setCustomNotificationHighVersion(String title, String content, String intent, int smallIcon, int largeIcon) {
-        return new Notification.Builder(getApplicationContext(), channelID)
+        return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
@@ -244,7 +253,7 @@ public class XNotificationManager extends ContextWrapper {
      * @return
      */
     private NotificationCompat.Builder setCustomNotification(String title, String content, String intent, int smallIcon, int largeIcon) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelID);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channelStatus.getChannelId());
         builder.setContentTitle(title)
                 .setContentText(content)
                 .setWhen(System.currentTimeMillis())
@@ -267,16 +276,16 @@ public class XNotificationManager extends ContextWrapper {
         Logger.i(TAG, "sendCustomNotification ...");
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             Logger.i(TAG, "sendCustomNotification ...api>=26");
-            createNotificationChannel();
+            createNotificationChannelBuild();
             Notification notification = setCustomNotificationHighVersion(title, content, intent, android.R.drawable.sym_def_app_icon, largeIcon).build();
             notification.contentIntent = contentIntent;
-            getManager().notify(notifyCustomID, notification);
+            getManager().notify(defaultNotifyId, notification);
         } else {
             Logger.i(TAG, "sendCustomNotification ...api<26");
             Notification notification = setCustomNotification(title, content, intent, android.R.drawable.sym_def_app_icon, largeIcon).build();
             notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
             notification.contentIntent = contentIntent;
-            getManager().notify(notifyCustomID, notification);
+            getManager().notify(defaultNotifyId, notification);
         }
 
     }
@@ -295,7 +304,7 @@ public class XNotificationManager extends ContextWrapper {
         Logger.i(TAG, "sendCustomNotification ...");
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             Logger.i(TAG, "sendCustomNotification ...api>=26");
-            createNotificationChannel();
+            createNotificationChannelBuild();
             Notification notification = setCustomNotificationHighVersion(title, content, intent, android.R.drawable.sym_def_app_icon, largeIcon).build();
             notification.contentIntent = contentIntent;
             getManager().notify(notifyID, notification);
@@ -310,27 +319,4 @@ public class XNotificationManager extends ContextWrapper {
     }
 
 
-
-    /**
-     * notification intent
-     * @param context
-     * @param cls
-     * @param requestCode
-     */
-    public PendingIntent onPendingIntent(Context context, Class<?> cls, int requestCode) {
-        Intent intent = new Intent(context, cls);
-        return PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    /**
-     * notification intent
-     * @param action
-     * @param context
-     * @param cls
-     * @param requestCode
-     */
-    public PendingIntent onPendingIntent(String action, Context context, Class<?> cls, int requestCode) {
-        Intent intent = new Intent(action);
-        return PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-    }
 }

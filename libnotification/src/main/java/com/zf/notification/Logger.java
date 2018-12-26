@@ -9,6 +9,8 @@ import android.util.Log;
  * description : 日志控制类
  */
 public class Logger {
+
+
     /**日志开关*/
     private static boolean logSwitch = false;
 
