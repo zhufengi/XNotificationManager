@@ -11,8 +11,6 @@ import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
-import android.view.View;
-import android.widget.RemoteViews;
 
 
 
@@ -46,6 +44,7 @@ public class XNotificationManager extends ContextWrapper {
     private String TAG = "HNotificationManager";
     private NotificationManager manager = null;
     private static XNotificationManager instance;
+    private NotificationStyles notificationStyles = null;
 
     /**
      * 通知栏高版本区分
@@ -65,9 +64,17 @@ public class XNotificationManager extends ContextWrapper {
     public int notifyID = 1;
     /**更新自定义id*/
     public int notifyCustomID = 2;
+    /**channel 设置*/
+    private ChannelStatus channelStatus;
 
+    /**
+     *
+     * @param context
+     */
     public XNotificationManager(Context context) {
         super(context);
+        channelStatus = new ChannelStatus();
+        notificationStyles = new NotificationStyles(this);
     }
 
     public static XNotificationManager getInstance (Context context){
@@ -82,7 +89,7 @@ public class XNotificationManager extends ContextWrapper {
     }
 
     /**
-     * 控制日志开关
+     * 控制日志开关,默认为关
      * @param b
      */
     public void setLogger(boolean b){
@@ -122,7 +129,7 @@ public class XNotificationManager extends ContextWrapper {
      * 创建通知渠道 Android O(8.0)
      */
     @TargetApi(Build.VERSION_CODES.O)
-    private void createNotificationChannel() {
+    public void createNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         getManager().createNotificationChannel(channel);
@@ -221,7 +228,7 @@ public class XNotificationManager extends ContextWrapper {
         return new Notification.Builder(getApplicationContext(), channelID)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setContent(setCustomRemoteViews(title, content, intent, largeIcon))
+                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
                 .setAutoCancel(true);
 
     }
@@ -243,7 +250,7 @@ public class XNotificationManager extends ContextWrapper {
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(smallIcon)
 //                .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), largeIcon))
-                .setContent(setCustomRemoteViews(title, content, intent, largeIcon))
+                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
                 .setAutoCancel(true);
         return builder;
     }
@@ -267,7 +274,7 @@ public class XNotificationManager extends ContextWrapper {
         } else {
             Logger.i(TAG, "sendCustomNotification ...api<26");
             Notification notification = setCustomNotification(title, content, intent, android.R.drawable.sym_def_app_icon, largeIcon).build();
-            notification.contentView = setCustomRemoteViews(title, content, intent, largeIcon);
+            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
             notification.contentIntent = contentIntent;
             getManager().notify(notifyCustomID, notification);
         }
@@ -295,40 +302,14 @@ public class XNotificationManager extends ContextWrapper {
         } else {
             Logger.i(TAG, "sendCustomNotification ...api<26");
             Notification notification = setCustomNotification(title, content, intent, android.R.drawable.sym_def_app_icon, largeIcon).build();
-            notification.contentView = setCustomRemoteViews(title, content, intent, largeIcon);
+            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
             notification.contentIntent = contentIntent;
             getManager().notify(notifyID, notification);
         }
 
     }
 
-    /**
-     * 自定义通知栏布局
-     *
-     * @param title     标题
-     * @param content   内容
-     * @param intent    按钮内容
-     * @param largeIcon 图标
-     * @return
-     */
-    private RemoteViews setCustomRemoteViews(String title, String content, String intent, int largeIcon) {
-        //自定义布局
-        RemoteViews remoteView = new RemoteViews(getApplicationContext().getPackageName(), R.layout.notification_layout);
-        /**大图标*/
-        remoteView.setImageViewResource(R.id.imgNotifition, largeIcon);
-        /**标题*/
-        remoteView.setTextViewText(R.id.text1, title);
-        /**内容*/
-        remoteView.setTextViewText(R.id.text2, content);
-        /**设置等按钮*/
-        remoteView.setViewVisibility(R.id.flButton, View.GONE);
-        if (intent != null) {
-            remoteView.setViewVisibility(R.id.flButton, View.VISIBLE);
-            remoteView.setImageViewResource(R.id.imgIntent, R.drawable.btn_notification);
-            remoteView.setTextViewText(R.id.tvIntent, intent);
-        }
-        return remoteView;
-    }
+
 
     /**
      * notification intent
