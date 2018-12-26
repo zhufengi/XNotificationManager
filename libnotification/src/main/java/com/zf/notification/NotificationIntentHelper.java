@@ -12,6 +12,7 @@ import android.content.Intent;
  */
 public class NotificationIntentHelper {
 
+    private static final String TAG = "NotificationIntentHelper";
     private static Intent intent = null;
 
     private NotificationIntentHelper(){
@@ -26,6 +27,7 @@ public class NotificationIntentHelper {
      */
     public static PendingIntent onPendingIntentClass(Context context,int requestCode,Class<?> cls) {
         intent = new Intent(context, cls);
+        Logger.d(TAG,"onPendingIntentClass ===>:"+cls.getName());
         return onPendingIntent(context, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
@@ -37,6 +39,7 @@ public class NotificationIntentHelper {
      */
     public static PendingIntent onPendingIntentAction(Context context,int requestCode,String action) {
         intent = new Intent(action);
+        Logger.d(TAG,"onPendingIntentAction ===>:"+action);
         return onPendingIntent(context, requestCode, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
@@ -49,6 +52,7 @@ public class NotificationIntentHelper {
      * @return
      */
     public static PendingIntent onPendingIntent(Context context,int requestCode,Intent intent,int flags){
+        Logger.d(TAG,"onPendingIntent ===>");
         return PendingIntent.getActivity(context, requestCode, intent, flags);
     }
 }

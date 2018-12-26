@@ -192,7 +192,6 @@ public class XNotificationManager extends ContextWrapper {
      */
     public void sendNotification(String title, String content) {
         Logger.i(TAG,"11111111");
-        cancelAll();
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             createNotificationChannelBuild();
             Notification notification = setChannelNotification(title, content).build();
@@ -211,7 +210,6 @@ public class XNotificationManager extends ContextWrapper {
      * @param icon
      */
     public void sendNotification(String title, String content, int icon) {
-        cancelAll();
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             createNotificationChannelBuild();
             Notification notification = setCustomNotificationHighVersion(title, content, null, android.R.drawable.sym_def_app_icon, icon).build();
@@ -272,7 +270,6 @@ public class XNotificationManager extends ContextWrapper {
      * @param contentIntent
      */
     public void sendCustomNotification(String title, String content, String intent, int largeIcon, PendingIntent contentIntent) {
-        cancelAll();
         Logger.i(TAG, "sendCustomNotification ...");
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             Logger.i(TAG, "sendCustomNotification ...api>=26");
@@ -300,7 +297,6 @@ public class XNotificationManager extends ContextWrapper {
      * @param contentIntent
      */
     public void sendCustomNotification(String title, String content, int notifyID, String intent, int largeIcon, PendingIntent contentIntent) {
-        cancelAll();
         Logger.i(TAG, "sendCustomNotification ...");
         if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
             Logger.i(TAG, "sendCustomNotification ...api>=26");
