@@ -7,6 +7,6 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-//        XNotificationManager.initChannel("test_id2","test_channel2");
+        XNotificationManager.initChannel("test_id2","test_channel2");
     }
 }
