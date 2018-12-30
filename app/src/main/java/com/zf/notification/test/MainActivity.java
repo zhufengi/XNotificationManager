@@ -14,10 +14,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         XNotificationManager.getInstance(this).setLogger(true);
-        XNotificationManager.getInstance(this).sendNotification("自定义通知栏","我是通知栏");
+        XNotificationManager.getInstance(this).sendNotification("自定义通知栏","我是通知栏",R.mipmap.ic_launcher);
         XNotificationManager.getInstance(this).setCurrentNotifyId(1);
 
-        XNotificationManager.getInstance(this).sendCustomNotification("通知","我是通知栏","点我",0,
+        XNotificationManager.getInstance(this).sendCustomNotification("通知","我是通知栏","点我",0,R.mipmap.ic_launcher,
           NotificationIntentHelper.onPendingIntentClass(this, 0, MainActivity.class));
     }
 }

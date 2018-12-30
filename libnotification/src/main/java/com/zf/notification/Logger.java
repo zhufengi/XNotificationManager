@@ -12,7 +12,7 @@ public class Logger {
 
 
     /**日志开关*/
-    private static boolean logSwitch = false;
+    private static boolean logSwitch = true;
 
     /**
      * 初始化日志：true 打开日志，false 关闭日志

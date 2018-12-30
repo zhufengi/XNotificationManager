@@ -27,10 +27,18 @@ public class NotificationChannel implements Serializable {
         return new NotificationChannel(channelId,channelName);
     }
 
+    /**
+     * 获取channel id
+     * @return
+     */
     public String getChannelId() {
         return channelId;
     }
 
+    /**
+     * 获取channel name
+     * @return
+     */
     public String getChannelName() {
         return channelName;
     }
