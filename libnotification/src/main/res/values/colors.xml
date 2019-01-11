@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorMain">#107CFF</color>
+    <color name="common_title">#232323</color>
+    <color name="common_line">#e1e1e1</color>
+    <color name="divider">#20000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="exmobi_white">#7f090000</color>
+    <color name="color_loading_text">#536b77</color>
+</resources>
