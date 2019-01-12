@@ -51,9 +51,9 @@ public class XNotificationManager extends ContextWrapper {
     /**默认的notifyId*/
     private int defaultNotifyId = 0;
     /**NotifyId 设置*/
-    private static NotifyIds notifyIds;
+    private static NotifyId notifyIds;
     /**channel 设置*/
-    private static NotificationChannel channelStatus = null;
+    private static XNotificationChannel channelStatus = null;
 
     /**
      * 私有 XNotificationManager
@@ -91,7 +91,7 @@ public class XNotificationManager extends ContextWrapper {
      * @param channelName
      */
     public static void initChannel(String channelId,String channelName){
-        channelStatus = NotificationChannel.createNotificationChannel(channelId,channelName);
+        channelStatus = XNotificationChannel.createNotificationChannel(channelId,channelName);
     }
 
     /**
@@ -99,7 +99,7 @@ public class XNotificationManager extends ContextWrapper {
      * @param notifyId
      */
     public void setCurrentNotifyId(int notifyId){
-        new NotifyIds(notifyId);
+        new NotifyId(notifyId);
         this.defaultNotifyId = notifyId;
     }
 
@@ -217,7 +217,7 @@ public class XNotificationManager extends ContextWrapper {
         return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(smallIcon)
-                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
+                .setContent(notificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon))
                 .setAutoCancel(true);
 
     }
@@ -238,7 +238,7 @@ public class XNotificationManager extends ContextWrapper {
                 .setContentText(content)
                 .setWhen(System.currentTimeMillis())
                 .setSmallIcon(smallIcon)
-                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
+                .setContent(notificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon))
                 .setAutoCancel(false);
     }
 
@@ -260,7 +260,7 @@ public class XNotificationManager extends ContextWrapper {
         } else {
             Logger.i(TAG, "sendCustomNotification ...api<26");
             Notification notification = setCustomNotification(title, content, intent,smallIcon, largeIcon).build();
-            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
+            notification.contentView = notificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
             notification.contentIntent = contentIntent;
             getManager().notify(defaultNotifyId, notification);
         }
@@ -286,7 +286,7 @@ public class XNotificationManager extends ContextWrapper {
         } else {
             Logger.i(TAG, "sendCustomNotification ...api<26");
             Notification notification = setCustomNotification(title, content, intent, smallIcon, largeIcon).build();
-            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
+            notification.contentView = notificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
             notification.contentIntent = contentIntent;
             getManager().notify(notifyID, notification);
         }

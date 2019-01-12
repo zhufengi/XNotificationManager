@@ -1,15 +1,16 @@
 package com.zf.notification;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
-
+import android.widget.RemoteViews;
+import static android.content.Context.NOTIFICATION_SERVICE;
 
 /**
  *
@@ -36,264 +37,264 @@ import android.support.v4.app.NotificationCompat;
  * 通知栏管理器 build模式
  *
  */
-public class XNotificationBuildManager extends ContextWrapper {
+public class XNotificationBuildManager {
 
-    private String TAG = "HNotificationManager";
-    private NotificationManager manager = null;
-    private static XNotificationBuildManager instance;
-    private NotificationStyles notificationStyles = null;
-
+    private static String TAG = "HNotificationManager";
+    private static NotificationManager manager = null;
     /**
      * 通知栏高版本区分
      */
-    private final int currentHighVersionDefaultApi = Build.VERSION_CODES.O;
+    private static int currentHighVersionDefaultApi = Build.VERSION_CODES.O;
     /**默认的notifyId*/
-    private int defaultNotifyId = 0;
+    private static int defaultNotifyId = 0;
     /**NotifyId 设置*/
-    private static NotifyIds notifyIds;
+    private final NotifyId notifyId;
     /**channel 设置*/
-    private static NotificationChannel channelStatus = null;
+    private final XNotificationChannel channelStatus;
+    /*显示风格*/
+    private final RemoteViews remoteViewStyles;
+    private final Context mContext;
+    /*标题*/
+    private final String title;
+    /*文本*/
+    private final String content;
+    /*按钮文字*/
+    private final String intent;
+    /*小图标*/
+    private final int smallIcon;
+    /*大图标*/
+    private final int largeIcon;
+    /*点击取消*/
+    private final boolean autoCancel;
+
 
     /**
-     * 私有 XNotificationManager
-     * @param context
-     */
-    private XNotificationBuildManager(Context context) {
-        super(context);
-        if (channelStatus == null){
-            throw new UnsupportedOperationException("u need initChannel");
-        }
-        createNotificationChannelBuild();
-        notificationStyles = new NotificationStyles(this);
-    }
-
-    /**
-     * 外部调用
-     * @param context
-     * @return
-     */
-    public static XNotificationBuildManager getInstance (Context context){
-        if (instance == null){
-            synchronized (XNotificationBuildManager.class){
-                if (instance == null){
-                    instance = new XNotificationBuildManager(context);
-                }
-            }
-        }
-        return instance;
-    }
-
-    /**
-     * init Channel
-     * 建议在Application中处理
-     * @param channelId
-     * @param channelName
-     */
-    public static void initChannel(String channelId,String channelName){
-        channelStatus = NotificationChannel.createNotificationChannel(channelId,channelName);
-    }
-
-    /**
-     * 设置当前通知的notifyid
-     * @param notifyId
-     */
-    public void setCurrentNotifyId(int notifyId){
-        new NotifyIds(notifyId);
-        this.defaultNotifyId = notifyId;
-    }
-
-    /**
-     * 控制日志开关,默认为开
-     * @param b
-     */
-    public void setLogger(boolean b){
-        Logger.init(b);
-    }
-
-    /**
-     * 获取系统通知栏服务
      *
-     * @return
+     * @param builder
      */
-    private NotificationManager getManager() {
-        if (manager == null) {
-            manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        }
-        return manager;
-    }
-
-    /**
-     * 取消通知
-     *
-     * @param id
-     */
-    public void cancel(int id) {
-        getManager().cancel(id);
-    }
-
-    /**
-     * 取消全部通知
-     */
-    public void cancelAll() {
-        getManager().cancelAll();
-    }
-
-
-    /**
-     * 创建通知渠道 Android O(8.0)
-     */
-    @TargetApi(Build.VERSION_CODES.O)
-    private void createNotificationChannelBuild() {
-        android.app.NotificationChannel channel = new android.app.NotificationChannel(channelStatus.getChannelId(), channelStatus.getChannelName(), NotificationManager.IMPORTANCE_HIGH);
-        channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-        getManager().createNotificationChannel(channel);
-    }
-
-    /**
-     * 设置通知栏信息--Android API 26（8.0及其以上）
-     *
-     * @param title
-     * @param content
-     * @return
-     */
-    @TargetApi(Build.VERSION_CODES.O)
-    private Notification.Builder setChannelNotification(String title, String content, int smallIcon) {
-        return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
-                .setContentTitle(title)
-                .setWhen(System.currentTimeMillis())
-                .setContentText(content)
-                .setSmallIcon(smallIcon)
-                .setAutoCancel(false);
-    }
-
-    /**
-     * 设置通知栏信息--Android API 25（8.0以下）
-     *
-     * @param title
-     * @param content
-     * @return
-     */
-    private NotificationCompat.Builder setNotification(String title, String content,int smallIcon) {
-        return new NotificationCompat.Builder(getApplicationContext(), channelStatus.getChannelId())
-                .setContentTitle(title)
-                .setWhen(System.currentTimeMillis())
-                .setContentText(content)
-                .setSmallIcon(smallIcon)
-                .setAutoCancel(false);
-    }
-
-    /**
-     * 默认发送通知
-     *
-     * @param title 标题
-     * @param content 文本
-     * @param smallIcon 小图标
-     */
-    public void sendNotification(String title, String content,int smallIcon) {
-        Logger.i(TAG,"sendNotification... ");
-        if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
-            Notification notification = setChannelNotification(title, content,smallIcon).build();
-            getManager().notify(defaultNotifyId, notification);
-        } else {
-            Notification notification = setNotification(title, content,smallIcon).build();
-            getManager().notify(defaultNotifyId, notification);
-        }
-    }
-
-
-    /**
-     * 自定义样式通知栏--Android API 26（8.0及其以上）
-     *
-     * @param title     标题
-     * @param content   内容
-     * @param intent    按钮文本
-     * @param smallIcon 小图标
-     * @param largeIcon 大图标
-     * @return
-     */
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private Notification.Builder setCustomNotificationHighVersion(String title, String content, String intent, int smallIcon, int largeIcon) {
-        return new Notification.Builder(getApplicationContext(), channelStatus.getChannelId())
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(smallIcon)
-                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
-                .setAutoCancel(true);
+    private XNotificationBuildManager(Builder builder) {
+        this.notifyId = builder.notifyId;
+        this.channelStatus = builder.channelStatus;
+        this.remoteViewStyles = builder.remoteViewStyles;
+        this.mContext = builder.mContext;
+        this.title = builder.title;
+        this.content = builder.content;
+        this.intent = builder.intent;
+        this.smallIcon = builder.smallIcon;
+        this.largeIcon = builder.largeIcon;
+        this.autoCancel = builder.autoCancel;
 
     }
+     public static class Builder{
+        private  Context mContext;
+        private  XNotificationChannel channelStatus;
+        private  RemoteViews remoteViewStyles;
+        private  String title;
+        private  String content;
+        private  String intent;
+        private  int smallIcon;
+        private  int largeIcon;
+        private  NotifyId notifyId;
+        private  boolean autoCancel;
 
-    /**
-     * 设置通知栏信息--Android API 25（8.0以下）
-     *
-     * @param title
-     * @param content
-     * @param intent
-     * @param smallIcon
-     * @param largeIcon
-     * @return
-     */
-    private NotificationCompat.Builder setCustomNotification(String title, String content, String intent, int smallIcon, int largeIcon) {
-        return new NotificationCompat.Builder(getApplicationContext(), channelStatus.getChannelId())
-                .setContentTitle(title)
-                .setContentText(content)
-                .setWhen(System.currentTimeMillis())
-                .setSmallIcon(smallIcon)
-                .setContent(notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon))
-                .setAutoCancel(false);
+
+       public Builder mContext(Context mContext){
+           this.mContext = mContext;
+           return this;
+       }
+       public Builder setChannelStatus(XNotificationChannel channelStatus){
+           this.channelStatus = channelStatus;
+           return this;
+       }
+       public Builder setRemoteViewStyles(RemoteViews remoteViewStyles){
+           this.remoteViewStyles = remoteViewStyles;
+           return this;
+       }
+       public Builder setTitle(String title){
+           this.title = title;
+           return this;
+       }
+       public Builder setContent(String content){
+           this.content = content;
+           return this;
+       }
+       public Builder setIntent(String intent){
+           this.intent = intent;
+           return this;
+       }
+       public Builder setSmallIcon(int smallIcon){
+           this.smallIcon = smallIcon;
+           return this;
+       }
+       public Builder setLargeIcon(int largeIcon){
+           this.largeIcon = largeIcon;
+           return this;
+       }
+       public Builder setNotifyId(NotifyId notifyId){
+           this.notifyId = notifyId;
+           return this;
+       }
+       public Builder setAutoCancel(boolean autoCancel){
+           this.autoCancel = autoCancel;
+           return this;
+       }
+         private void initApplicationChannel(){
+           if (channelStatus == null){
+
+           }
+         }
+
+         /**
+          * 获取系统通知栏服务
+          *
+          * @return
+          */
+         private NotificationManager getManager() {
+             if (manager == null) {
+                 manager = (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+                 createNotificationChannelBuild();
+             }
+             return manager;
+         }
+
+         /**
+          * 取消通知
+          *
+          * @param id
+          */
+         public void cancel(int id) {
+             getManager().cancel(id);
+         }
+
+         /**
+          * 取消全部通知
+          */
+         public void cancelAll() {
+             getManager().cancelAll();
+         }
+
+
+         /**
+          * 创建通知渠道 Android O(8.0)
+          */
+         @TargetApi(Build.VERSION_CODES.O)
+         private void createNotificationChannelBuild() {
+             android.app.NotificationChannel channel = new android.app.NotificationChannel(channelStatus.getChannelId(), channelStatus.getChannelName(), NotificationManager.IMPORTANCE_HIGH);
+             channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+             getManager().createNotificationChannel(channel);
+         }
+
+         /**
+          * 配置通知栏普通样式信息(标题，文本)
+          * Android API 26（8.0及其以上）
+          *
+          * @return
+          */
+         @TargetApi(Build.VERSION_CODES.O)
+         private Notification.Builder setChannelNotification() {
+             return new Notification.Builder(mContext, channelStatus.getChannelId())
+                     .setWhen(System.currentTimeMillis())
+                     .setContentTitle(title)
+                     .setContentText(content)
+                     .setSmallIcon(smallIcon)
+                     .setAutoCancel(autoCancel);
+         }
+
+         /**
+          * 配置通知栏普通样式信息(标题，文本)
+          * Android API 25（8.0以下）
+          *
+          * @return
+          */
+         private NotificationCompat.Builder setNotification() {
+             return new NotificationCompat.Builder(mContext, channelStatus.getChannelId())
+                     .setWhen(System.currentTimeMillis())
+                     .setContentTitle(title)
+                     .setContentText(content)
+                     .setSmallIcon(smallIcon)
+                     .setAutoCancel(autoCancel);
+         }
+
+
+
+
+         /**
+          * 配置自定义样式通知栏
+          * Android API 26（8.0及其以上）
+          *
+          * @return
+          */
+         @RequiresApi(api = Build.VERSION_CODES.O)
+         private Notification.Builder setCustomNotificationHighVersion() {
+             if (remoteViewStyles == null){
+                 Logger.i(TAG,"remoteViewStyles == null ");
+                 this.remoteViewStyles = NotificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
+             }
+             return new Notification.Builder(mContext, channelStatus.getChannelId())
+                     .setWhen(System.currentTimeMillis())
+                     .setSmallIcon(smallIcon)
+                     .setCustomContentView(remoteViewStyles)
+                     .setAutoCancel(autoCancel);
+
+         }
+
+         /**
+          * 配置自定义样式通知栏
+          * Android API 25（8.0以下）
+          *
+          * @return
+          */
+         private NotificationCompat.Builder setCustomNotification() {
+             if (remoteViewStyles == null){
+                 Logger.i(TAG,"remoteViewStyles == null ");
+                 this.remoteViewStyles = NotificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
+             }
+             return new NotificationCompat.Builder(mContext, channelStatus.getChannelId())
+                     .setWhen(System.currentTimeMillis())
+                     .setCustomContentView(remoteViewStyles)
+                     .setSmallIcon(smallIcon)
+                     .setAutoCancel(autoCancel);
+         }
+
+         /**
+          * 默认发送通知
+          *
+          */
+         @SuppressLint("NewApi")
+         public void sendNotification(PendingIntent contentIntent) {
+             Logger.i(TAG,"sendNotification... ");
+             if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
+                 Notification notification = setChannelNotification().build();
+                 notification.contentIntent = contentIntent;
+                 getManager().notify(defaultNotifyId, notification);
+             } else {
+                 Notification notification = setNotification().build();
+                 notification.contentIntent = contentIntent;
+                 getManager().notify(defaultNotifyId, notification);
+             }
+         }
+
+         /**
+          * 发送自定义布局通知栏
+          * @param contentIntent PendingIntent
+          */
+         @SuppressLint("NewApi")
+         public void sendCustomNotification(PendingIntent contentIntent) {
+             if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
+                 Logger.i(TAG, "sendCustomNotification ...api>=26");
+                  Notification notification = setCustomNotificationHighVersion().build();
+                 notification.contentIntent = contentIntent;
+                 getManager().notify(2, notification);
+             } else {
+                 Logger.i(TAG, "sendCustomNotification ...api<26");
+                 Notification notification = setCustomNotification().build();
+                 notification.contentIntent = contentIntent;
+                 getManager().notify(2, notification);
+             }
+
+         }
+
     }
 
-    /**
-     * 发送自定义布局通知栏
-     * @param title 标题
-     * @param content 文本
-     * @param intent 按钮文字
-     * @param largeIcon 大图标
-     * @param contentIntent PendingIntent
-     */
-    public void sendCustomNotification(String title, String content, String intent, int largeIcon,int smallIcon, PendingIntent contentIntent) {
-        Logger.i(TAG, "sendCustomNotification ...");
-        if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
-            Logger.i(TAG, "sendCustomNotification ...api>=26");
-            Notification notification = setCustomNotificationHighVersion(title, content, intent, smallIcon, largeIcon).build();
-            notification.contentIntent = contentIntent;
-            getManager().notify(defaultNotifyId, notification);
-        } else {
-            Logger.i(TAG, "sendCustomNotification ...api<26");
-            Notification notification = setCustomNotification(title, content, intent,smallIcon, largeIcon).build();
-            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
-            notification.contentIntent = contentIntent;
-            getManager().notify(defaultNotifyId, notification);
-        }
-
-    }
-
-    /**
-     * 发送自定义布局通知栏
-     * @param title 标题
-     * @param content 文本
-     * @param notifyID 通知id
-     * @param intent 按钮文字
-     * @param largeIcon 大图标
-     * @param contentIntent PendingIntent
-     */
-    public void sendCustomNotification(String title, String content, int notifyID, String intent, int largeIcon,int smallIcon, PendingIntent contentIntent) {
-        Logger.i(TAG, "sendCustomNotification ...");
-        if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
-            Logger.i(TAG, "sendCustomNotification ...api>=26");
-            Notification notification = setCustomNotificationHighVersion(title, content, intent, smallIcon, largeIcon).build();
-            notification.contentIntent = contentIntent;
-            getManager().notify(notifyID, notification);
-        } else {
-            Logger.i(TAG, "sendCustomNotification ...api<26");
-            Notification notification = setCustomNotification(title, content, intent, smallIcon, largeIcon).build();
-            notification.contentView = notificationStyles.setCustomRemoteViews(title, content, intent, largeIcon);
-            notification.contentIntent = contentIntent;
-            getManager().notify(notifyID, notification);
-        }
-
-    }
-
-    static class Builder{
-
-    }
 
 }

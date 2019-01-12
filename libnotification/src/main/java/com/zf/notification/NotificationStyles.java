@@ -13,15 +13,14 @@ import android.widget.RemoteViews;
  */
 public class NotificationStyles {
 
-    private Context mContext;
+    private static Context mContext;
 
     public NotificationStyles(Context mContext){
         this.mContext = mContext;
     }
 
-
     /**
-     * 自定义通知栏布局
+     * 带图标自定义样式布局
      *
      * @param title     标题
      * @param content   内容
@@ -30,17 +29,17 @@ public class NotificationStyles {
      * @return
      */
     @SuppressLint("NewApi")
-    public RemoteViews setCustomRemoteViews(String title, String content, String intent, int largeIcon) {
+    public static RemoteViews setDefaultRemoteViews(String title, String content, String intent, int largeIcon) {
         //自定义布局
-        RemoteViews remoteView = new RemoteViews(mContext.getPackageName(), R.layout.notification_layout);
+        RemoteViews remoteView = new RemoteViews(XNotification.context.getPackageName(), R.layout.notification_layout);
         //判断传递值为空情况
         if (title == null || "".equals(title)){
             remoteView.setViewVisibility(R.id.text1,View.GONE);
-            remoteView.setTextColor(R.id.text1,mContext.getColor(R.color.black));
+            remoteView.setTextColor(R.id.text1,XNotification.context.getColor(R.color.black));
         }
         if (content == null || "".equals(content)){
             remoteView.setViewVisibility(R.id.text2,View.GONE);
-            remoteView.setTextColor(R.id.text2,mContext.getColor(R.color.black));
+            remoteView.setTextColor(R.id.text2,XNotification.context.getColor(R.color.black));
         }
         if (intent == null || "".equals(intent)) {
             remoteView.setViewVisibility(R.id.tvIntent, View.GONE);
@@ -54,5 +53,17 @@ public class NotificationStyles {
         /**设置等按钮*/
         remoteView.setTextViewText(R.id.tvIntent, intent);
         return remoteView;
+    }
+
+    /**
+     * 自定义setCustomRemoteViews
+     * @param customRemoteViews
+     * @return
+     */
+    public RemoteViews setCustomRemoteViews(RemoteViews customRemoteViews) {
+        if (customRemoteViews == null){
+            throw new UnsupportedOperationException("customRemoteViews can not null");
+        }
+        return customRemoteViews;
     }
 }
