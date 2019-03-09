@@ -2,6 +2,7 @@ package com.zf.notification.test;
 
 import com.zf.notification.XNotificationChannel;
 import com.zf.notification.XNotification;
+import com.zf.notification.XNotificationManager;
 
 public class Application extends android.app.Application {
     @Override
@@ -13,6 +14,6 @@ public class Application extends android.app.Application {
         XNotification.setLogger(true);
         /*创建全局的channel*/
         XNotificationChannel.createNotificationChannel("test","testname");
-//        XNotificationManager.initChannel("test_id2","test_channel2");
+        XNotificationManager.initChannel("test_id2","test_channel2");
     }
 }

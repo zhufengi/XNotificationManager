@@ -44,6 +44,9 @@ public class NotificationStyles {
         if (intent == null || "".equals(intent)) {
             remoteView.setViewVisibility(R.id.tvIntent, View.GONE);
         }
+        if (largeIcon == 0){
+            remoteView.setViewVisibility(R.id.imgNotifition,View.GONE);
+        }
         /**大图标*/
         remoteView.setImageViewResource(R.id.imgNotifition, largeIcon);
         /**标题*/
