@@ -95,14 +95,6 @@ public class XNotificationManager extends ContextWrapper {
     }
 
     /**
-     * 设置当前通知的notifyid
-     * @param notifyId
-     */
-    public void setCurrentNotifyId(int notifyId){
-        this.defaultNotifyId = notifyId;
-    }
-
-    /**
      * 控制日志开关,默认为开
      * @param b
      */

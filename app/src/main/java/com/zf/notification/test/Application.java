@@ -13,7 +13,6 @@ public class Application extends android.app.Application {
         /*调试日志*/
         XNotification.setLogger(true);
         /*创建全局的channel*/
-        XNotificationChannel.createNotificationChannel("test","testname");
         XNotificationManager.initChannel("test_id2","test_channel2");
     }
 }

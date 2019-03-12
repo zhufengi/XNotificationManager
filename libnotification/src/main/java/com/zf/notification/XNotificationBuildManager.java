@@ -39,16 +39,14 @@ import static android.content.Context.NOTIFICATION_SERVICE;
  */
 public class XNotificationBuildManager {
 
-    private static String TAG = "HNotificationManager";
+    private static String TAG = "XNotificationBuildManager";
     private static NotificationManager manager = null;
     /**
      * 通知栏高版本区分
      */
     private static int currentHighVersionDefaultApi = Build.VERSION_CODES.O;
-    /**默认的notifyId*/
-    private static int defaultNotifyId = 0;
     /**NotifyId 设置*/
-    private final NotifyId notifyId;
+    private final int notifyId;
     /**channel 设置*/
     private final XNotificationChannel channelStatus;
     /*显示风格*/
@@ -94,7 +92,7 @@ public class XNotificationBuildManager {
         private  String intent;
         private  int smallIcon;
         private  int largeIcon;
-        private  NotifyId notifyId;
+        private  int notifyId;
         private  boolean autoCancel;
 
 
@@ -130,7 +128,7 @@ public class XNotificationBuildManager {
            this.largeIcon = largeIcon;
            return this;
        }
-       public Builder setNotifyId(NotifyId notifyId){
+       public Builder setNotifyId(int notifyId){
            this.notifyId = notifyId;
            return this;
        }
@@ -226,13 +224,11 @@ public class XNotificationBuildManager {
           */
          @RequiresApi(api = Build.VERSION_CODES.O)
          private Notification.Builder setCustomNotificationHighVersion() {
-             if (remoteViewStyles == null){
-                 Logger.i(TAG,"remoteViewStyles == null ");
-                 this.remoteViewStyles = NotificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
-             }
              return new Notification.Builder(mContext, channelStatus.getChannelId())
                      .setWhen(System.currentTimeMillis())
                      .setSmallIcon(smallIcon)
+                     .setContentTitle(title)
+                     .setContentText(content)
                      .setCustomContentView(remoteViewStyles)
                      .setAutoCancel(autoCancel);
 
@@ -245,14 +241,12 @@ public class XNotificationBuildManager {
           * @return
           */
          private NotificationCompat.Builder setCustomNotification() {
-             if (remoteViewStyles == null){
-                 Logger.i(TAG,"remoteViewStyles == null ");
-                 this.remoteViewStyles = NotificationStyles.setDefaultRemoteViews(title, content, intent, largeIcon);
-             }
              return new NotificationCompat.Builder(mContext, channelStatus.getChannelId())
                      .setWhen(System.currentTimeMillis())
                      .setCustomContentView(remoteViewStyles)
                      .setSmallIcon(smallIcon)
+                     .setContentTitle(title)
+                     .setContentText(content)
                      .setAutoCancel(autoCancel);
          }
 
@@ -266,11 +260,11 @@ public class XNotificationBuildManager {
              if (Build.VERSION.SDK_INT >= currentHighVersionDefaultApi) {
                  Notification notification = setChannelNotification().build();
                  notification.contentIntent = contentIntent;
-                 getManager().notify(defaultNotifyId, notification);
+                 getManager().notify(notifyId, notification);
              } else {
                  Notification notification = setNotification().build();
                  notification.contentIntent = contentIntent;
-                 getManager().notify(defaultNotifyId, notification);
+                 getManager().notify(notifyId, notification);
              }
          }
 
@@ -284,12 +278,14 @@ public class XNotificationBuildManager {
                  Logger.i(TAG, "sendCustomNotification ...api>=26");
                   Notification notification = setCustomNotificationHighVersion().build();
                  notification.contentIntent = contentIntent;
-                 getManager().notify(2, notification);
+                 notification.contentView = remoteViewStyles;
+                 getManager().notify(notifyId, notification);
              } else {
                  Logger.i(TAG, "sendCustomNotification ...api<26");
                  Notification notification = setCustomNotification().build();
                  notification.contentIntent = contentIntent;
-                 getManager().notify(2, notification);
+                 notification.contentView = remoteViewStyles;
+                 getManager().notify(notifyId, notification);
              }
 
          }

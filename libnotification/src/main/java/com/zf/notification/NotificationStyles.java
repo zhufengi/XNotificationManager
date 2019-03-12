@@ -63,7 +63,7 @@ public class NotificationStyles {
      * @param customRemoteViews
      * @return
      */
-    public RemoteViews setCustomRemoteViews(RemoteViews customRemoteViews) {
+    public static RemoteViews setCustomRemoteViews(RemoteViews customRemoteViews,String title, String content, String intent, int largeIcon) {
         if (customRemoteViews == null){
             throw new UnsupportedOperationException("customRemoteViews can not null");
         }
